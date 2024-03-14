@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/google/uuid"
 )
 
 func uploadTempObject(client *storage.Client, bucket, object string, data []byte) error {
@@ -59,9 +60,10 @@ func composeObjects(client *storage.Client, bucket, tempObject, destObject strin
 }
 
 func storeBatch(app *App, data []byte) error {
+	uuid := uuid.New()
 	bucket := app.storageBucket
 	destObject := "log.pb"
-	tempObject := "temp-log-2.pb"
+	tempObject := "temp-log-" + uuid.String() + ".pb"
 
 	// insert temp object
 	err := uploadTempObject(app.storageClient, bucket, tempObject, data)
