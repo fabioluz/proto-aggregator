@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package main;
+
+import "google/protobuf/timestamp.proto";
+option go_package = "./main";
+
+message ProtoLog {
+    string logId = 1;
+    google.protobuf.Timestamp timestamp = 2;
+    string message = 3;
+}
