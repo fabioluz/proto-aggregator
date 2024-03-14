@@ -54,7 +54,7 @@ func composeObjects(client *storage.Client, bucket, tempObject, destObject strin
 		return fmt.Errorf("error when deleting objects: %w", err)
 	}
 
-	fmt.Printf("New composite object %v was created by combining %v and %v\n", destObj, destObj, tempObj)
+	fmt.Printf("New composite object %s was created by combining %s and %s\n", destObject, destObject, tempObject)
 	return nil
 }
 

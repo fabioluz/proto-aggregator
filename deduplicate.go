@@ -32,7 +32,6 @@ func fillTempTable(tx *sql.Tx, batch Batch) error {
 	_, err := tx.Exec(`
         CREATE TEMP TABLE temp_logs (log_id UUID) ON COMMIT DROP;
         CREATE INDEX temp_logs_log_id_idx ON temp_logs USING HASH (log_id);
-
     `)
 	if err != nil {
 		return fmt.Errorf("error creating temp table: %s", err)
@@ -105,10 +104,10 @@ func deduplicateBatch(tx *sql.Tx, batch Batch) (Batch, error) {
 
 	// find duplicated logs
 	rows, err := tx.Query(`
-        SELECT t.log_id
-        FROM temp_logs t
-        INNER JOIN processed_logs p ON t.log_id = p.log_id
-    `)
+		SELECT t.log_id
+		FROM temp_logs t
+		INNER JOIN processed_logs p ON t.log_id = p.log_id
+	`)
 	if err != nil {
 		return nil, fmt.Errorf("error selecting new logs: %w", err)
 	}
