@@ -1,14 +1,14 @@
 version: '3.8'
 
-# networks:
-#   app-tier:
-#     driver: bridge
-
 services:
   kafka:
     image: 'bitnami/kafka:latest'
+    hostname: kafka
+    container_name: kafka
     ports:
       - '9094:9094'
+    networks:
+      - myNetwork
     environment:
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
@@ -20,8 +20,12 @@ services:
 
   postgresql:
     image: 'bitnami/postgresql:latest'
+    hostname: postgresql
+    container_name: postgresql
     ports:
-      - '5432:5432'
+      - 5432:5432
+    networks:
+      - myNetwork
     environment:
       - POSTGRESQL_DATABASE=proto_parser_db
       - POSTGRESQL_USERNAME=my_user
@@ -29,8 +33,33 @@ services:
 
   gcs-mock:
     image: fsouza/fake-gcs-server
+    hostname: gcs-mock
+    container_name: gcs-mock
     ports:
       - 4443:4443
+    networks:
+      - myNetwork
     volumes:
       - ${PWD}/data:/data
     entrypoint: ["/bin/fake-gcs-server", "-data", "/data", "-scheme", "http", "-public-host", "localhost:4443"]
+
+  aggregator:
+    build: .
+    environment:
+      - DB_HOST=postgresql
+      - DB_USER=my_user
+      - DB_PASSWORD=password123
+      - DB_NAME=proto_parser_db
+      - KAFKA_HOST=kafka:9094
+      - GCS_ENDPOINT=http://localhost:4443/storage/v1/
+    ports:
+      - 8080:8080
+    networks:
+      - myNetwork
+    depends_on:
+      - kafka
+      - postgresql
+      - gcs-mock
+
+networks:
+  myNetwork:
