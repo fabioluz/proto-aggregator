@@ -14,7 +14,7 @@ func processBatches(app *App, chanBatches <-chan Batch) {
 		fmt.Printf("Processing batch: %d items\n", len(batch))
 
 		// store partitions for commiting
-		topicPartitions := make([]kafka.TopicPartition, len(batch))
+		topicPartitions := []kafka.TopicPartition{}
 		for _, value := range batch {
 			topicPartitions = append(topicPartitions, value.TopicPartition)
 		}
