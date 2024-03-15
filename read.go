@@ -23,7 +23,7 @@ func readMessages(app *App, chanBatches chan<- Batch) {
 		if err != nil {
 			var kafkaErr kafka.Error
 			if errors.As(err, &kafkaErr) && kafkaErr.Code() == kafka.ErrTimedOut {
-				fmt.Println("Timeout, flushing queue")
+				fmt.Println("Timeout, committing batch")
 				if len(currentBatch) > 0 {
 					sendBatch()
 				}

@@ -8,12 +8,12 @@ services:
     ports:
       - '9094:9094'
     networks:
-      - myNetwork
+      - aggregator_network
     environment:
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://kafka:9094
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
@@ -25,7 +25,7 @@ services:
     ports:
       - 5432:5432
     networks:
-      - myNetwork
+      - aggregator_network
     environment:
       - POSTGRESQL_DATABASE=proto_parser_db
       - POSTGRESQL_USERNAME=my_user
@@ -38,10 +38,10 @@ services:
     ports:
       - 4443:4443
     networks:
-      - myNetwork
+      - aggregator_network
     volumes:
       - ${PWD}/data:/data
-    entrypoint: ["/bin/fake-gcs-server", "-data", "/data", "-scheme", "http", "-public-host", "localhost:4443"]
+    entrypoint: ["/bin/fake-gcs-server", "-data", "/data", "-scheme", "http", "-public-host", "gcs-mock:4443"]
 
   aggregator:
     build: .
@@ -51,15 +51,15 @@ services:
       - DB_PASSWORD=password123
       - DB_NAME=proto_parser_db
       - KAFKA_HOST=kafka:9094
-      - GCS_ENDPOINT=http://localhost:4443/storage/v1/
+      - GCS_ENDPOINT=http://gcs-mock:4443/storage/v1/
     ports:
       - 8080:8080
     networks:
-      - myNetwork
+      - aggregator_network
     depends_on:
       - kafka
       - postgresql
       - gcs-mock
 
 networks:
-  myNetwork:
+  aggregator_network:
