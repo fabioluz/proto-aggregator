@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	sync "sync"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/storage"
