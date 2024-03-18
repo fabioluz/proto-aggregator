@@ -14,7 +14,7 @@ This will spin up Kafka, PostgreSQL, and a Mocked Google Cloud Storage server.
 
 To see the application in action, you can produce kafka messages by running:
 
-````
+```
 cat examples/messages.jsonl | docker exec -i kafka kafka-console-producer.sh --producer.config /opt/bitnami/kafka/config/producer.properties --bootstrap-server 127.0.0.1:9094 --topic logs
 ```
 
@@ -43,15 +43,15 @@ When a batch is received by the `processBatches` function, an SQL Transaction is
 
 The system takes an `EXCLUSIVE LOCK` to `processed_logs` table, making sure that other instances will have to wait for this transaction before saving their data.
 
-Now, we need to check if the new batch does not contain a `log` that already exists in `processed_logs` table. A simple query such as:
+Now, we need to check if the new batch does not contain a `log` that already exists in `processed_logs` table. A simple query such as
 
 ```
 SELECT log_id FROM processed_logs WHERE log_in IN (<HUGE LIST OF IDS>)
 ```
 
-would work, but that would be very inneficient. If the list inside the `IN` clause is too big, the query would be too slow. The bigger the batch, slower the query.
+would be enough to give a list of duplicated logs, but that is very inefficient. If the list inside the `IN` clause is too big, the query would be too slow. The bigger the batch, slower the query.
 
-In order to solve that, we create a temporary table called `temp_processed_logs`
+As a better approach, we create a temporary table called `temp_processed_logs`.
 
 ```
 CREATE TEMP TABLE temp_logs (log_id UUID) ON COMMIT DROP;
@@ -59,7 +59,7 @@ CREATE INDEX temp_logs_log_id_idx ON temp_logs USING HASH (log_id);
 ```
 
 Now, we can use Postgre `COPY` command to efficiently insert all the `log_id`s from the batch into the temporary table.
-Then, we just need to join both tables to extract duplicated `log_id`s:
+Then, we just need to join both tables to extract duplicated `log_id`s.
 
 ```
 SELECT t.log_id
@@ -74,7 +74,7 @@ We can now insert all the new logs into the final `processed_logs` table using `
 
 Protobuf is great for serializing strucutred objects into a binary format. However, it doesn't come with delimiters, which means that if you add many objects in the same file, you don't know when the objects start and end. This makes the deserializing process much harder, if not impossible. 
 
-In order to solve that we can use custom delimiters to tell us when each object ends. This is a common technique used in many projects out there and it is perfect for this use case. All we need to do is to add the size of the message (in bytes) before each message, so our final compiled file will look like this:
+In order to solve that, we can use custom delimiters to tell us when each object ends. This is a common technique used in many projects out there and it is perfect for this use case. All we need to do is to add the size of the message (in bytes) before each message, so our final compiled file will look like this:
 
 ```
 size | message | size | message | size | message ...
