@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -13,13 +14,23 @@ import (
 func readMessages(app *App, chanBatches chan<- Batch) {
 	currentBatch := make(Batch)
 
+	batchSize, err := strconv.Atoi(getEnvOrDefault("BATCH_SIZE", "500"))
+	if err != nil {
+		log.Fatalf("Error reading batch size: %v", err)
+	}
+
+	timeout, err := time.ParseDuration(getEnvOrDefault("TIMEOUT", "15s"))
+	if err != nil {
+		log.Fatalf("Error reading timeout: %v", err)
+	}
+
 	sendBatch := func() {
 		chanBatches <- currentBatch
 		currentBatch = make(Batch)
 	}
 
 	for {
-		msg, err := app.kafkaConsumer.ReadMessage(time.Second * 5)
+		msg, err := app.kafkaConsumer.ReadMessage(timeout)
 		if err != nil {
 			var kafkaErr kafka.Error
 			if errors.As(err, &kafkaErr) && kafkaErr.Code() == kafka.ErrTimedOut {
@@ -45,7 +56,7 @@ func readMessages(app *App, chanBatches chan<- Batch) {
 			TopicPartition: msg.TopicPartition,
 		}
 
-		if len(currentBatch) >= 500 {
+		if len(currentBatch) >= batchSize {
 			fmt.Println("Batch is full, sending to process")
 			sendBatch()
 		}

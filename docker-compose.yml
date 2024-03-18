@@ -52,6 +52,8 @@ services:
       - DB_NAME=proto_parser_db
       - KAFKA_HOST=kafka:9094
       - GCS_ENDPOINT=http://gcs-mock:4443/storage/v1/
+      - BATCH_SIZE=500
+      - TIMEOUT=15s
     ports:
       - 8080:8080
     networks:

@@ -36,6 +36,8 @@ type App struct {
 
 func main() {
 	fmt.Println("Initializing")
+	time.Sleep(10 * time.Second)
+
 	kafkaConsumer := createKafkaConsumer()
 	sqlConnection := createSqlConnection()
 	storageClient := createStorageClient()
@@ -175,119 +177,3 @@ func createStorageClient() *storage.Client {
 
 	return client
 }
-
-// func writeMessage(writer io.Writer, message proto.Message) error {
-// 	// Serialize the protobuf message
-// 	data, err := proto.Marshal(message)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to marshal message: %v", err)
-// 	}
-
-// 	// Write the length prefix
-// 	length := len(data)
-// 	if err := binary.Write(writer, binary.LittleEndian, int32(length)); err != nil {
-// 		return fmt.Errorf("failed to write message length: %v", err)
-// 	}
-
-// 	// Write the serialized message
-// 	if _, err := writer.Write(data); err != nil {
-// 		return fmt.Errorf("failed to write message data: %v", err)
-// 	}
-
-// 	return nil
-// }
-
-// Open the file for reading
-// file, err := os.Open("sd")
-// if err != nil {
-// 	log.Fatalf("failed to open file: %v", err)
-// }
-// defer file.Close()
-
-// // Read messages until EOF
-// for {
-// 	// Read the next message from the file
-// 	message, err := readMessage(file)
-// 	if err == io.EOF {
-// 		// No more messages to read, exit the loop
-// 		break
-// 	} else if err != nil {
-// 		log.Fatalf("Failed to read message: %v", err)
-// 	}
-
-// 	// Process the message (e.g., print it)
-// 	fmt.Printf("Read message: %+v\n", message)
-// }
-
-// func readMessage(file *os.File) (*ProtoLog, error) {
-// 	// Read the length prefix of the next message
-// 	var length int32
-// 	err := binary.Read(file, binary.LittleEndian, &length)
-// 	if err == io.EOF {
-// 		return nil, io.EOF
-// 	} else if err != nil {
-// 		return nil, fmt.Errorf("failed to read message length: %v", err)
-// 	}
-
-// 	// Read the message data
-// 	data := make([]byte, length)
-// 	_, err = io.ReadFull(file, data)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to read message data: %v", err)
-// 	}
-
-// 	// Unmarshal the message data into a MyMessage struct
-// 	message := &ProtoLog{}
-// 	err = proto.Unmarshal(data, message)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to unmarshal message: %v", err)
-// 	}
-
-// 	return message, nil
-// }
-
-// Open the file for reading
-// file, err := os.Open("output.pb")
-// if err != nil {
-//     log.Fatalf("failed to open file: %v", err)
-// }
-// defer file.Close()
-
-// // Read messages until EOF
-// for {
-//     // Read the next message from the file
-//     message, err := readMessage(file)
-//     if err == io.EOF {
-//         // No more messages to read, exit the loop
-//         break
-//     } else if err != nil {
-//         log.Fatalf("Failed to read message: %v", err)
-//     }
-
-//     // Process the message (e.g., print it)
-//     fmt.Printf("Read message: %+v\n", message)
-// }
-
-// file, err := os.Create("output.pb")
-// if err != nil {
-//     log.Fatalf("failed to create file: %v", err)
-// }
-// defer file.Close()
-
-// Convert to protobuf
-// protoLog := &ProtoLog{
-// 	LogId:     jsonData.LogId,
-// 	Timestamp: timeToTimestamp(jsonData.Timestamp),
-// 	Message:   jsonData.Message,
-// }
-
-// // Write the message to the file with length prefix
-// if err := writeMessage(file, protoLog); err != nil {
-// 	log.Fatalf("failed to write message: %v", err)
-// }
-
-// // Manually commit the offset
-// _, err = consumer.CommitMessage(msg)
-// if err != nil {
-// 	fmt.Printf("Failed to commit offset: %s\n", err)
-// }
